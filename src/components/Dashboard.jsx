@@ -88,9 +88,10 @@ const Dashboard = () => {
     <div style={{ display: 'flex', flex: 1, height: '100vh', overflow: 'hidden' }}>
       <ChatList activeId={parseInt(id)} />
 
+      {/* Chat Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', position: 'relative', overflow: 'hidden' }}>
 
-        {/* Header */}
+        {/* Chat Header */}
         <div style={{ background: '#fff', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ position: 'relative' }}>
@@ -103,7 +104,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Video size={20} color="#9ca3af" style={{ cursor: 'pointer' }} onClick={() => setShowVideo(true)} />
+            <Video size={20} color="#9ca3af" style={{ cursor: 'pointer' }} onClick={() => { setShowVideo(true); setShowAudio(false) }} />
             <Phone size={20} color="#9ca3af" style={{ cursor: 'pointer' }} onClick={handleAudioCall} />
             <Search size={20} color="#9ca3af" style={{ cursor: 'pointer' }} />
             <div style={{ width: '1px', height: '20px', background: '#e5e7eb' }} />
@@ -123,24 +124,92 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Video Call */}
+        {/* ── Video Call Overlay ── */}
         {showVideo && (
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '60%', height: '100%', zIndex: 20 }}>
-            <img src={videoBg} alt="Video" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', top: '16px', right: '16px', width: '160px', height: '100px', borderRadius: '12px', overflow: 'hidden', border: '3px solid white' }}>
-              <img src={videoThumb} alt="thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{
+            position: 'absolute',
+            top: '19px',
+            right: '19px',
+            width: 'calc(100% - 40px)',
+            maxWidth: '705px',
+            height: '454px',
+            borderRadius: '30px',
+            overflow: 'hidden',
+            zIndex: 20,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.3)'
+          }}>
+            {/* Main video */}
+            <img
+              src={videoBg}
+              alt="Video Call"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+
+            {/* Thumbnail top right */}
+            <div style={{
+              position: 'absolute',
+              top: '14px',
+              right: '14px',
+              width: '170px',
+              height: '110px',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.35)'
+            }}>
+              <img
+                src={videoThumb}
+                alt="My video"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
             </div>
-            <div style={{ position: 'absolute', bottom: '40%', left: '50%', transform: 'translateX(-50%)' }}>
-              <button onClick={() => setShowVideo(false)} style={{ background: '#ef4444', border: 'none', borderRadius: '50px', padding: '14px 28px', cursor: 'pointer' }}>
-                <PhoneOff size={24} color="white" />
+
+            {/* End Call Button */}
+            <div style={{
+              position: 'absolute',
+              bottom: '36px',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}>
+              <button
+                onClick={() => setShowVideo(false)}
+                style={{
+                  width: '68px',
+                  height: '44px',
+                  background: '#ef4444',
+                  border: 'none',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(239,68,68,0.6)'
+                }}
+              >
+                <PhoneOff size={20} color="white" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Audio Call */}
+        {/* ── Audio Call Overlay ── */}
         {showAudio && (
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '60%', height: '55%', background: 'white', zIndex: 20, borderRadius: '0 0 0 20px', boxShadow: '-4px 4px 20px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+          <div style={{
+            position: 'absolute',
+            top: '19px',
+            right: '19px',
+            width: 'calc(100% - 40px)',
+            maxWidth: '705px',
+            height: '454px',
+            background: 'white',
+            zIndex: 20,
+            borderRadius: '30px',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px'
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <img src={camel} alt="Camel" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #e5e7eb' }} />
@@ -162,7 +231,10 @@ const Dashboard = () => {
             ) : (
               <p style={{ fontSize: '20px', fontWeight: 700, color: '#111827' }}>Connecting...</p>
             )}
-            <button onClick={() => { setShowAudio(false); setAudioConnected(false) }} style={{ background: 'white', border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: '10px', padding: '10px 32px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+            <button
+              onClick={() => { setShowAudio(false); setAudioConnected(false) }}
+              style={{ background: 'white', border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: '10px', padding: '10px 32px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+            >
               Hang Up
             </button>
           </div>

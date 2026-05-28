@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Bell, Lock, Key, Palette, Image, FileText, Keyboard, HelpCircle, Plus, X, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bell, Lock, Key, Palette, Image, FileText, Keyboard, HelpCircle, Plus, X, Search, MessageCircle, Phone, Paperclip, MapPin, Circle, ClipboardList, Fingerprint } from 'lucide-react'
 import EmptyState from './EmptyState'
 import myProfile from '../assets/my-profilee.jpg'
 import dinesh from '../assets/dinesh.jpg'
@@ -9,7 +9,6 @@ import cuteTurtle from '../assets/cute-turtle.jpg'
 import coolSpirit from '../assets/cool-spirit.jpg'
 import strangeCat from '../assets/strange-cat.jpg'
 
-// ── Reusable Radio Option ────────────────────────────────────────────────────
 const RadioOption = ({ label, checked, onClick }) => (
   <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
     <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: checked ? '6px solid #2563eb' : '2px solid #d1d5db', flexShrink: 0, transition: 'all 0.2s' }} />
@@ -17,7 +16,6 @@ const RadioOption = ({ label, checked, onClick }) => (
   </div>
 )
 
-// ── Reusable Checkbox Option ─────────────────────────────────────────────────
 const CheckOption = ({ label, desc, checked, onClick }) => (
   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }} onClick={onClick}>
     <div>
@@ -30,7 +28,6 @@ const CheckOption = ({ label, desc, checked, onClick }) => (
   </div>
 )
 
-// ── Sub-screen wrapper ───────────────────────────────────────────────────────
 const SubScreen = ({ title, subtitle, onBack, children }) => (
   <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb' }}>
     <div style={{ padding: '28px 20px 20px' }}>
@@ -48,7 +45,7 @@ const SubScreen = ({ title, subtitle, onBack, children }) => (
   </div>
 )
 
-// ── Notifications ────────────────────────────────────────────────────────────
+// ── Notifications ─────────────────────────────────────────────────────────────
 const Notifications = ({ onBack }) => {
   const [checks, setChecks] = useState({ notifications: true, previews: true, reactions: false, ringtone: false, sounds: true })
   const toggle = key => setChecks(p => ({ ...p, [key]: !p[key] }))
@@ -63,7 +60,7 @@ const Notifications = ({ onBack }) => {
   )
 }
 
-// ── Privacy ──────────────────────────────────────────────────────────────────
+// ── Privacy ───────────────────────────────────────────────────────────────────
 const Privacy = ({ onBack, onNavigate }) => {
   const [readReceipts, setReadReceipts] = useState(true)
   const items = [
@@ -97,7 +94,7 @@ const Privacy = ({ onBack, onNavigate }) => {
   )
 }
 
-// ── Last Seen ────────────────────────────────────────────────────────────────
+// ── Last Seen ─────────────────────────────────────────────────────────────────
 const LastSeen = ({ onBack }) => {
   const [selected, setSelected] = useState('Everyone')
   return (
@@ -109,7 +106,7 @@ const LastSeen = ({ onBack }) => {
   )
 }
 
-// ── Profile Photo ────────────────────────────────────────────────────────────
+// ── Profile Photo ─────────────────────────────────────────────────────────────
 const ProfilePhoto = ({ onBack }) => {
   const [selected, setSelected] = useState('Everyone')
   return (
@@ -121,7 +118,7 @@ const ProfilePhoto = ({ onBack }) => {
   )
 }
 
-// ── About ────────────────────────────────────────────────────────────────────
+// ── About ─────────────────────────────────────────────────────────────────────
 const About = ({ onBack }) => {
   const [selected, setSelected] = useState('Everyone')
   return (
@@ -133,7 +130,7 @@ const About = ({ onBack }) => {
   )
 }
 
-// ── Groups Privacy ───────────────────────────────────────────────────────────
+// ── Groups Privacy ────────────────────────────────────────────────────────────
 const GroupsPrivacy = ({ onBack }) => {
   const [selected, setSelected] = useState('Everyone')
   return (
@@ -145,7 +142,7 @@ const GroupsPrivacy = ({ onBack }) => {
   )
 }
 
-// ── Blocked Contacts ─────────────────────────────────────────────────────────
+// ── Blocked Contacts ──────────────────────────────────────────────────────────
 const BlockedContacts = ({ onBack }) => {
   const [showModal, setShowModal] = useState(false)
   const [blocked, setBlocked] = useState([
@@ -155,9 +152,7 @@ const BlockedContacts = ({ onBack }) => {
     { id: 4, name: 'Cool spirit', about: 'Fiddling with ideas', avatar: coolSpirit },
     { id: 5, name: 'strange cat', about: 'Omw to discover myself', avatar: strangeCat },
   ])
-
   const unblock = (id) => setBlocked(prev => prev.filter(b => b.id !== id))
-
   return (
     <>
       <SubScreen title="Blocked Contacts" onBack={onBack}>
@@ -180,7 +175,6 @@ const BlockedContacts = ({ onBack }) => {
         ))}
       </SubScreen>
 
-      {/* Block New Contact Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
           <div style={{ background: 'white', borderRadius: '20px', padding: '28px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
@@ -219,7 +213,137 @@ const BlockedContacts = ({ onBack }) => {
   )
 }
 
-// ── Keyboard Shortcuts Modal ─────────────────────────────────────────────────
+// ── Security ──────────────────────────────────────────────────────────────────
+const Security = ({ onBack }) => {
+  const items = [
+    { icon: MessageCircle, label: 'Text and voice messages' },
+    { icon: Phone, label: 'Audio & Video Calls' },
+    { icon: Paperclip, label: 'Photos, videos & documents' },
+    { icon: MapPin, label: 'Location Sharing' },
+    { icon: Circle, label: 'Status Updates' },
+  ]
+  return (
+    <SubScreen title="Security" onBack={onBack}>
+      {/* Lock Icon */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+          </svg>
+        </div>
+      </div>
+      <p style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '8px' }}>Your Chats and calls are private</p>
+      <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6', marginBottom: '24px' }}>
+        End-to-end encryption keeps your personal messages & call between you and person you choose to communicate with. Not even talk can read or listen to them. This includes your
+      </p>
+      {items.map(({ icon: Icon, label }) => (
+        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 0', borderBottom: '1px solid #f3f4f6' }}>
+          <Icon size={18} color="#6b7280" />
+          <span style={{ fontSize: '14px', color: '#374151' }}>{label}</span>
+        </div>
+      ))}
+    </SubScreen>
+  )
+}
+
+// ── Chat Wallpaper ────────────────────────────────────────────────────────────
+const ChatWallpaper = ({ onBack }) => {
+  const [selected, setSelected] = useState('#3d3580')
+  const [enableDoodle, setEnableDoodle] = useState(true)
+  const colors = [
+    null,
+    '#1a2b2b', '#2d5a3d',
+    '#2d7a5a', '#2a5a6b', '#c4847a',
+    '#8a7a6a', '#2a0a0a', '#4a5a1a',
+    '#c4507a', '#3aaa8a', '#d4804a',
+    '#c4b4d4', '#0a1a0a', '#e4a4b4',
+    '#1a1a1a', '#aa1a8a', '#3d3580',
+    '#3aaa6a', '#8a5a1a', '#1a1a6a',
+  ]
+
+  return (
+    <div style={{ display: 'flex', flex: 1, height: '100vh' }}>
+      <SubScreen title="Set Chat Wallpaper" onBack={onBack}>
+        {/* Enable Doodle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <span style={{ fontSize: '14px', color: '#374151' }}>Enable Talk Doodle</span>
+          <div onClick={() => setEnableDoodle(!enableDoodle)} style={{ width: '20px', height: '20px', border: enableDoodle ? 'none' : '2px solid #d1d5db', borderRadius: '4px', background: enableDoodle ? '#2563eb' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            {enableDoodle && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          </div>
+        </div>
+
+        {/* Color Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+          {colors.map((color, i) => (
+            <div
+              key={i}
+              onClick={() => color && setSelected(color)}
+              style={{
+                height: '80px', borderRadius: '12px',
+                background: color || '#f3f4f6',
+                border: selected === color ? '3px solid #2563eb' : '3px solid transparent',
+                cursor: color ? 'pointer' : 'default',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'border 0.15s'
+              }}
+            >
+              {!color && <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>Default</span>}
+            </div>
+          ))}
+        </div>
+      </SubScreen>
+
+      {/* Wallpaper Preview */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
+          <p style={{ fontSize: '15px', fontWeight: 600, color: '#111827', textAlign: 'center' }}>Wallpaper Preview</p>
+        </div>
+        <div style={{ flex: 1, background: selected }} />
+      </div>
+    </div>
+  )
+}
+
+// ── Request Account Info ──────────────────────────────────────────────────────
+const RequestAccountInfo = ({ onBack }) => (
+  <SubScreen title="Request Account Info" onBack={onBack}>
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
+      <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <ClipboardList size={44} color="white" />
+      </div>
+    </div>
+    <p style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '12px' }}>Request Report</p>
+    <div style={{ height: '1px', background: '#f3f4f6', marginBottom: '16px' }} />
+    <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.7' }}>
+      Create a report of your Talk Account Information and settings, which you can access or port to another app. This report does not include your messages.
+    </p>
+  </SubScreen>
+)
+
+// ── Help ──────────────────────────────────────────────────────────────────────
+const Help = ({ onBack }) => {
+  const items = ['Help Center', 'Contact Us', 'Licenses', 'Terms and Privacy Policy']
+  return (
+    <SubScreen title="Help" onBack={onBack}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
+        <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Fingerprint size={44} color="white" />
+        </div>
+      </div>
+      {items.map((item, i) => (
+        <div key={i}>
+          <div style={{ padding: '16px 0', cursor: 'pointer' }}>
+            <span style={{ fontSize: '15px', color: '#111827' }}>{item}</span>
+          </div>
+          {i < items.length - 1 && <div style={{ height: '1px', background: '#f3f4f6' }} />}
+        </div>
+      ))}
+    </SubScreen>
+  )
+}
+
+// ── Keyboard Shortcuts Modal ──────────────────────────────────────────────────
 const KeyboardModal = ({ onClose }) => {
   const shortcuts = [
     [{ label: 'Mark as unread', keys: ['Cmd', 'Shift', 'U'] }, { label: 'Mute', keys: ['Cmd', 'Shift', 'M'] }],
@@ -232,11 +356,9 @@ const KeyboardModal = ({ onClose }) => {
     [{ label: 'Settings', keys: ['Shift', ','] }, { label: 'Emoji Panel', keys: ['Cmd', 'E'] }],
     [{ label: 'Settings', keys: ['Cmd', 'G'] }, { label: 'Sticker Panel', keys: ['Cmd', 'S'] }],
   ]
-
   const Key = ({ k }) => (
     <span style={{ padding: '3px 8px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '12px', color: '#374151', background: '#f9fafb' }}>{k}</span>
   )
-
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
       <div style={{ background: 'white', borderRadius: '20px', padding: '32px', width: '780px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
@@ -261,7 +383,7 @@ const KeyboardModal = ({ onClose }) => {
   )
 }
 
-// ── Theme Modal ──────────────────────────────────────────────────────────────
+// ── Theme Modal ───────────────────────────────────────────────────────────────
 const ThemeModal = ({ onClose }) => {
   const [selected, setSelected] = useState('Light')
   return (
@@ -280,7 +402,7 @@ const ThemeModal = ({ onClose }) => {
   )
 }
 
-// ── Main Settings ────────────────────────────────────────────────────────────
+// ── Main Settings ─────────────────────────────────────────────────────────────
 const Settings = () => {
   const navigate = useNavigate()
   const [screen, setScreen] = useState('main')
@@ -304,6 +426,15 @@ const Settings = () => {
     setScreen(key)
   }
 
+  // Wallpaper has its own full layout
+  if (screen === 'wallpaper') {
+    return (
+      <div style={{ display: 'flex', flex: 1, height: '100vh' }}>
+        <ChatWallpaper onBack={() => setScreen('main')} />
+      </div>
+    )
+  }
+
   const renderLeft = () => {
     if (screen === 'notifications') return <Notifications onBack={() => setScreen('main')} />
     if (screen === 'privacy') return <Privacy onBack={() => setScreen('main')} onNavigate={(s) => setScreen(s)} />
@@ -312,10 +443,12 @@ const Settings = () => {
     if (screen === 'about') return <About onBack={() => setScreen('privacy')} />
     if (screen === 'groups') return <GroupsPrivacy onBack={() => setScreen('privacy')} />
     if (screen === 'blocked') return <BlockedContacts onBack={() => setScreen('privacy')} />
+    if (screen === 'security') return <Security onBack={() => setScreen('main')} />
+    if (screen === 'account') return <RequestAccountInfo onBack={() => setScreen('main')} />
+    if (screen === 'help') return <Help onBack={() => setScreen('main')} />
 
     return (
       <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb' }}>
-        {/* Header */}
         <div style={{ padding: '28px 20px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -323,8 +456,6 @@ const Settings = () => {
             </button>
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#111827' }}>Settings</h1>
           </div>
-
-          {/* Profile */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
             <img src={myProfile} alt="Profile" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
             <div>
@@ -333,8 +464,6 @@ const Settings = () => {
             </div>
           </div>
         </div>
-
-        {/* Menu Items */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px', scrollbarWidth: 'none' }}>
           {menuItems.map(({ key, icon: Icon, label }) => (
             <div key={key}>

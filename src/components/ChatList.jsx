@@ -1,6 +1,6 @@
-import { Search, SlidersHorizontal, Archive, ChevronDown, ChevronLeft } from 'lucide-react'
+import { Search, SlidersHorizontal, Archive, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import pinkPanda from '../assets/pink-panda.jpg'
 import dogHat from '../assets/dog-hat.jpg'
 import cuteTurtle from '../assets/cute-turtle.jpg'
@@ -53,41 +53,101 @@ const ChatItem = ({ chat, active, onClick }) => (
 
 const ChatList = ({ activeId }) => {
   const navigate = useNavigate()
-  const [filtered, setFiltered] = useState(false)
+  const [filter, setFilter] = useState('all') // 'all' | 'unread' | 'archived'
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const handleFilter = (value) => {
+    setShowDropdown(false)
+    if (value === 'archived') {
+      navigate('/archive')
+      return
+    }
+    setFilter(value)
+  }
 
   return (
     <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: '#F4F6FB', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb' }}>
 
       {/* Header */}
       <div style={{ background: '#fff', padding: '28px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {filtered ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => setFiltered(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <ChevronLeft size={22} color="#111827" />
-            </button>
-            <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#111827' }}>Unread</h1>
-          </div>
-        ) : (
-          <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#111827' }}>Chats</h1>
-        )}
+        <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#111827' }}>Chats</h1>
         <svg onClick={() => navigate('/updates')} width="30" height="30" viewBox="0 0 30 30" fill="none" style={{ cursor: 'pointer' }}>
           <circle cx="15" cy="15" r="12" stroke="#CBD5E1" strokeWidth="1.8" strokeDasharray="4.5 3" strokeLinecap="round"/>
         </svg>
       </div>
 
-      {/* Search */}
+      {/* Search + Filter */}
       <div style={{ background: '#fff', padding: '0 16px 14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F4F6FB', borderRadius: '14px', padding: '11px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F4F6FB', borderRadius: '14px', padding: '11px 16px', position: 'relative' }}>
           <Search size={16} color="#9ca3af" />
-          <input type="text" placeholder="Search" style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px' }} />
-          <button onClick={() => setFiltered(!filtered)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
-            <SlidersHorizontal size={16} color={filtered ? '#2563eb' : '#9ca3af'} />
-          </button>
+          <input
+            type="text"
+            placeholder="Search"
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px' }}
+          />
+
+          {/* Filter Button + Dropdown */}
+          <div ref={dropdownRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+            >
+              <SlidersHorizontal size={16} color={filter !== 'all' ? '#2563eb' : '#9ca3af'} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div style={{
+                position: 'absolute', top: '28px', right: '0',
+                background: 'white', borderRadius: '12px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                border: '1px solid #f1f3f8',
+                minWidth: '150px', zIndex: 100, overflow: 'hidden'
+              }}>
+                {[
+                  { value: 'all', label: 'All chats' },
+                  { value: 'unread', label: 'Unread' },
+                  { value: 'archived', label: 'Archived' },
+                ].map(({ value, label }, i, arr) => (
+                  <div
+                    key={value}
+                    onClick={() => handleFilter(value)}
+                    style={{
+                      padding: '13px 18px',
+                      fontSize: '14px',
+                      fontWeight: filter === value ? 600 : 400,
+                      color: filter === value ? '#2563eb' : '#111827',
+                      background: filter === value ? '#EEF2FF' : 'white',
+                      cursor: 'pointer',
+                      borderBottom: i < arr.length - 1 ? '1px solid #f3f4f6' : 'none',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = filter === value ? '#EEF2FF' : '#f9fafb'}
+                    onMouseLeave={e => e.currentTarget.style.background = filter === value ? '#EEF2FF' : 'white'}
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Archived — only show when not filtered */}
-      {!filtered && (
+      {/* Archived button — only show on All chats */}
+      {filter === 'all' && (
         <div style={{ background: '#fff', padding: '0 20px 16px', borderBottom: '1px solid #f3f4f6' }}>
           <button onClick={() => navigate('/archive')} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
             <Archive size={16} color="#2563eb" /> Archived
@@ -98,27 +158,8 @@ const ChatList = ({ activeId }) => {
       {/* Chat List */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', scrollbarWidth: 'none' }}>
 
-        {filtered ? (
-          /* Filter Mode */
-          unreadChats.length > 0 ? (
-            <>
-              {unreadChats.map(chat => (
-                <ChatItem
-                  key={chat.id}
-                  chat={chat}
-                  active={activeId === chat.id}
-                  onClick={() => navigate(`/chat/${chat.id}`)}
-                />
-              ))}
-            </>
-          ) : (
-            /* No Unread Messages */
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingTop: '40px' }}>
-              <p style={{ fontSize: '14px', color: '#9ca3af', fontWeight: 500 }}>No Unread Messages</p>
-            </div>
-          )
-        ) : (
-          /* Normal Mode */
+        {/* All Chats */}
+        {filter === 'all' && (
           <>
             <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '4px 6px 10px' }}>Pinned</p>
             {pinnedChats.map(chat => (
@@ -130,6 +171,23 @@ const ChatList = ({ activeId }) => {
             ))}
           </>
         )}
+
+        {/* Unread Filter */}
+        {filter === 'unread' && (
+          unreadChats.length > 0 ? (
+            <>
+              <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '4px 6px 10px' }}>Unread</p>
+              {unreadChats.map(chat => (
+                <ChatItem key={chat.id} chat={chat} active={activeId === chat.id} onClick={() => navigate(`/chat/${chat.id}`)} />
+              ))}
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingTop: '60px' }}>
+              <p style={{ fontSize: '14px', color: '#9ca3af', fontWeight: 500 }}>No Unread Messages</p>
+            </div>
+          )
+        )}
+
       </div>
     </div>
   )

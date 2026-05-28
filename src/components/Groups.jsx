@@ -8,7 +8,7 @@ import strangeCat from '../assets/strange-cat.jpg'
 import animalKingdom from '../assets/animal-kingdom.jpg'
 import abstractImg from '../assets/abstract-img.jpg'
 
-const groups = [
+const initialGroups = [
   { id: 1, name: 'Animal Kingdom', message: 'You: thnx!', time: '9:36', avatar: animalKingdom, online: true, pinned: true },
   { id: 2, name: 'Dog Hat', message: "It's so quite outside 🤨", time: '9:36', avatar: dogHat, badge: 2, online: true },
   { id: 3, name: 'Cute Turtle', message: "That's It. Goodbye!", time: '9:36', avatar: cuteTurtle, badge: 3, online: true },
@@ -16,8 +16,92 @@ const groups = [
   { id: 5, name: 'strange cat', message: 'You: Hi, sorry to bother you...', time: '9:36', avatar: strangeCat, online: true, chevron: true },
 ]
 
+const allContacts = [
+  { id: 1, name: 'Pink Panda', avatar: pinkPanda },
+  { id: 2, name: 'Dog Hat', avatar: dogHat },
+  { id: 3, name: 'Cute Turtle', avatar: cuteTurtle },
+  { id: 4, name: 'Cool spirit', avatar: coolSpirit },
+  { id: 5, name: 'strange cat', avatar: strangeCat },
+]
+
 const Groups = () => {
+  const [groups, setGroups] = useState(initialGroups)
   const [showModal, setShowModal] = useState(false)
+  const [groupName, setGroupName] = useState('')
+  const [selectedMembers, setSelectedMembers] = useState([])
+  const [memberSearch, setMemberSearch] = useState('')
+  const [activeGroup, setActiveGroup] = useState(initialGroups[0])
+  const [message, setMessage] = useState('')
+  const [chatMessages, setChatMessages] = useState({
+    1: [
+      { id: 1, text: 'Hi 👋, How are ya ?', time: '0:12', mine: false },
+      { id: 2, text: 'Hi 👋 Panda, not bad, u ?', time: '8:17', mine: true },
+      { id: 3, text: 'Can you send me an abstract image?', time: '8:17', mine: true },
+      { id: 4, type: 'image', time: '10:35', mine: false },
+      { id: 5, type: 'reaction', text: '🔥 1', mine: false },
+      { id: 6, text: 'Can you send it as file ?', time: '11:12', mine: true },
+      { id: 7, type: 'file', name: 'Abstract.png', time: '11:25', mine: false },
+      { id: 8, text: 'Thnx!', time: '11:28', mine: true },
+    ]
+  })
+
+  const filteredContacts = allContacts.filter(c =>
+    c.name.toLowerCase().includes(memberSearch.toLowerCase()) &&
+    !selectedMembers.find(m => m.id === c.id)
+  )
+
+  const addMember = (contact) => {
+    setSelectedMembers(prev => [...prev, contact])
+    setMemberSearch('')
+  }
+
+  const removeMember = (id) => {
+    setSelectedMembers(prev => prev.filter(m => m.id !== id))
+  }
+
+  const handleCreate = () => {
+    if (!groupName.trim()) return
+    const newGroup = {
+      id: Date.now(),
+      name: groupName.trim(),
+      message: 'Group created',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      avatar: selectedMembers[0]?.avatar || pinkPanda,
+      online: true,
+      pinned: false,
+    }
+    setGroups(prev => [...prev, newGroup])
+    setChatMessages(prev => ({
+      ...prev,
+      [newGroup.id]: [{ id: 1, text: `Group "${newGroup.name}" created! 🎉`, time: newGroup.time, mine: false }]
+    }))
+    setActiveGroup(newGroup)
+    setGroupName('')
+    setSelectedMembers([])
+    setMemberSearch('')
+    setShowModal(false)
+  }
+
+  const sendMessage = () => {
+    if (!message.trim() || !activeGroup) return
+    const newMsg = {
+      id: Date.now(),
+      text: message.trim(),
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      mine: true
+    }
+    setChatMessages(prev => ({
+      ...prev,
+      [activeGroup.id]: [...(prev[activeGroup.id] || []), newMsg]
+    }))
+    setMessage('')
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') sendMessage()
+  }
+
+  const currentMessages = chatMessages[activeGroup?.id] || []
 
   return (
     <div style={{ display: 'flex', flex: 1, height: '100vh', position: 'relative' }}>
@@ -40,9 +124,7 @@ const Groups = () => {
 
         {/* Create New Group */}
         <div style={{ background: '#fff', padding: '0 20px 16px', borderBottom: '1px solid #f3f4f6' }}>
-          <button
-            onClick={() => setShowModal(true)}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '14px', fontWeight: 600 }}>
+          <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '14px', fontWeight: 600 }}>
             Create New Group
             <Plus size={18} color="#2563eb" />
           </button>
@@ -51,41 +133,45 @@ const Groups = () => {
         {/* Groups List */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px', scrollbarWidth: 'none' }}>
 
-          <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '4px 6px 10px' }}>Pinned</p>
-
-          {groups.filter(g => g.pinned).map(g => (
-            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: '#2563eb', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px' }}>
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
-                {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '14.5px', color: 'white' }}>{g.name}</span>
-                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>{g.time}</span>
+          {/* Pinned */}
+          {groups.filter(g => g.pinned).length > 0 && (
+            <>
+              <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '4px 6px 10px' }}>Pinned</p>
+              {groups.filter(g => g.pinned).map(g => (
+                <div key={g.id} onClick={() => setActiveGroup(g)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: activeGroup?.id === g.id ? '#2563eb' : '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                    {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '14.5px', color: activeGroup?.id === g.id ? 'white' : '#111827' }}>{g.name}</span>
+                      <span style={{ fontSize: '12px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>{g.time}</span>
+                    </div>
+                    <span style={{ fontSize: '13px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.75)' : '#9ca3af' }}>{g.message}</span>
+                  </div>
                 </div>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)' }}>{g.message}</span>
-              </div>
-            </div>
-          ))}
+              ))}
+            </>
+          )}
 
+          {/* All Chats */}
           <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '14px 6px 10px' }}>All Chats</p>
-
           {groups.filter(g => !g.pinned).map(g => (
-            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div key={g.id} onClick={() => setActiveGroup(g)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: activeGroup?.id === g.id ? '#2563eb' : '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <div style={{ position: 'relative', flexShrink: 0 }}>
                 <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
                 {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '14.5px', color: '#111827' }}>{g.name}</span>
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>{g.time}</span>
+                  <span style={{ fontWeight: 600, fontSize: '14.5px', color: activeGroup?.id === g.id ? 'white' : '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
+                  <span style={{ fontSize: '12px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>{g.time}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '13px', color: '#9ca3af' }}>{g.message}</span>
-                  {g.badge && <span style={{ width: '20px', height: '20px', background: '#2563eb', color: 'white', fontSize: '11px', fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{g.badge}</span>}
-                  {g.chevron && <ChevronDown size={14} color="#9ca3af" />}
+                  <span style={{ fontSize: '13px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.75)' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.message}</span>
+                  {g.badge && <span style={{ width: '20px', height: '20px', background: activeGroup?.id === g.id ? 'white' : '#2563eb', color: activeGroup?.id === g.id ? '#2563eb' : 'white', fontSize: '11px', fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{g.badge}</span>}
+                  {g.chevron && <ChevronDown size={14} color={activeGroup?.id === g.id ? 'rgba(255,255,255,0.7)' : '#9ca3af'} />}
                 </div>
               </div>
             </div>
@@ -100,11 +186,11 @@ const Groups = () => {
         <div style={{ background: '#fff', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ position: 'relative' }}>
-              <img src={animalKingdom} alt="Animal Kingdom" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
+              <img src={activeGroup?.avatar} alt={activeGroup?.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
               <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '11px', height: '11px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />
             </div>
             <div>
-              <p style={{ fontWeight: 700, fontSize: '15px', color: '#111827' }}>Animal Kingdom</p>
+              <p style={{ fontWeight: 700, fontSize: '15px', color: '#111827' }}>{activeGroup?.name}</p>
               <p style={{ fontSize: '12px', color: '#9ca3af' }}>Pink Panda, Turtle, 212 others</p>
             </div>
           </div>
@@ -116,81 +202,60 @@ const Groups = () => {
 
         {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px', scrollbarWidth: 'none' }}>
-
-          {/* Received bubble */}
-          <div style={{ display: 'flex', marginBottom: '8px' }}>
-            <div style={{ background: '#fff', borderRadius: '18px 18px 18px 4px', padding: '12px 16px', maxWidth: '320px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-              <p style={{ fontSize: '14px', color: '#111827' }}>Hi 👋, How are ya ?</p>
-              <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', textAlign: 'right' }}>0:12</p>
-            </div>
-          </div>
-
-          {/* Date divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
-            <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
-            <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Today</span>
-            <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
-          </div>
-
-          {/* Sent bubbles */}
-          {['Hi 👋 Panda, not bad, u ?', 'Can you send me an abstract image?'].map((msg, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '6px' }}>
-              <div style={{ background: '#2563eb', borderRadius: '18px 18px 4px 18px', padding: '12px 16px', maxWidth: '320px' }}>
-                <p style={{ fontSize: '14px', color: 'white' }}>{msg}</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '4px', textAlign: 'right' }}>8:17</p>
-              </div>
+          {currentMessages.map((msg) => (
+            <div key={msg.id}>
+              {msg.type === 'image' ? (
+                <div style={{ marginBottom: '8px' }}>
+                  <div style={{ background: '#fff', borderRadius: '18px', padding: '8px', display: 'inline-block', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                    <img src={abstractImg} alt="Abstract" style={{ width: '180px', height: '150px', borderRadius: '12px', objectFit: 'cover', display: 'block' }} />
+                    <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
+                  </div>
+                </div>
+              ) : msg.type === 'reaction' ? (
+                <div style={{ marginBottom: '8px' }}><span style={{ fontSize: '13px' }}>{msg.text}</span></div>
+              ) : msg.type === 'file' ? (
+                <div style={{ marginBottom: '8px' }}>
+                  <div style={{ background: '#fff', borderRadius: '16px', padding: '12px 16px', display: 'inline-flex', alignItems: 'center', gap: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                    <span style={{ fontSize: '18px' }}>🖼️</span>
+                    <span style={{ fontSize: '14px', color: '#111827', fontWeight: 500 }}>{msg.name}</span>
+                    <Download size={18} color="#9ca3af" style={{ cursor: 'pointer' }} />
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>{msg.time}</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: msg.mine ? 'flex-end' : 'flex-start', marginBottom: '6px' }}>
+                  <div style={{ background: msg.mine ? '#2563eb' : '#fff', borderRadius: msg.mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px', padding: '12px 16px', maxWidth: '320px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                    <p style={{ fontSize: '14px', color: msg.mine ? 'white' : '#111827' }}>{msg.text}</p>
+                    <p style={{ fontSize: '11px', color: msg.mine ? 'rgba(255,255,255,0.65)' : '#9ca3af', marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
-          {/* Image message */}
-          <div style={{ marginBottom: '8px' }}>
-            <div style={{ background: '#fff', borderRadius: '18px', padding: '8px', display: 'inline-block', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-              <img
-                src={abstractImg}
-                alt="Abstract"
-                style={{ width: '180px', height: '150px', borderRadius: '12px', objectFit: 'cover', display: 'block' }}
-              />
-              <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', textAlign: 'right' }}>10:35</p>
+          {/* Date divider only for group 1 */}
+          {activeGroup?.id === 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 16px' }}>
+              <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+              <span style={{ fontSize: '12px', color: '#9ca3af' }}>Today</span>
+              <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
             </div>
-            <div style={{ marginTop: '4px' }}><span style={{ fontSize: '13px' }}>🔥 1</span></div>
-          </div>
-
-          {/* Sent bubble */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '6px' }}>
-            <div style={{ background: '#2563eb', borderRadius: '18px 18px 4px 18px', padding: '12px 16px', maxWidth: '320px' }}>
-              <p style={{ fontSize: '14px', color: 'white' }}>Can you send it as file ?</p>
-              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '4px', textAlign: 'right' }}>11:12</p>
-            </div>
-          </div>
-
-          {/* File message */}
-          <div style={{ marginBottom: '8px' }}>
-            <div style={{ background: '#fff', borderRadius: '16px', padding: '12px 16px', display: 'inline-flex', alignItems: 'center', gap: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', minWidth: '200px' }}>
-              <div style={{ width: '36px', height: '36px', background: '#F4F6FB', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '18px' }}>🖼️</span>
-              </div>
-              <span style={{ fontSize: '14px', color: '#111827', fontWeight: 500 }}>Abstract.png</span>
-              <Download size={18} color="#9ca3af" style={{ cursor: 'pointer' }} />
-            </div>
-            <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>11:25</p>
-          </div>
-
-          {/* Sent Thnx */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '6px' }}>
-            <div style={{ background: '#2563eb', borderRadius: '18px 18px 4px 18px', padding: '12px 16px' }}>
-              <p style={{ fontSize: '14px', color: 'white' }}>Thnx!</p>
-              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '4px', textAlign: 'right' }}>11:28</p>
-            </div>
-          </div>
-
+          )}
         </div>
 
         {/* Message Input */}
         <div style={{ background: '#fff', padding: '14px 20px', borderTop: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Link size={20} color="#9ca3af" style={{ cursor: 'pointer', flexShrink: 0 }} />
-          <input type="text" placeholder="Write a message ..." style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }} />
+          <input
+            type="text"
+            placeholder="Write a message ..."
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }}
+          />
           <Smile size={20} color="#9ca3af" style={{ cursor: 'pointer', flexShrink: 0 }} />
-          <div style={{ width: '38px', height: '38px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <div onClick={sendMessage} style={{ width: '38px', height: '38px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Send size={18} color="white" />
           </div>
         </div>
@@ -200,34 +265,90 @@ const Groups = () => {
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
           <div style={{ background: 'white', borderRadius: '20px', padding: '28px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+
+            {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#111827' }}>Create New Group</h2>
-              <button onClick={() => setShowModal(false)} style={{ background: '#6b7280', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <button onClick={() => { setShowModal(false); setGroupName(''); setSelectedMembers([]); setMemberSearch('') }} style={{ background: '#6b7280', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <X size={16} color="white" />
               </button>
             </div>
 
-            {/* Name Field */}
+            {/* Group Name */}
             <div style={{ position: 'relative', marginBottom: '20px' }}>
               <label style={{ position: 'absolute', top: '-9px', left: '12px', background: 'white', padding: '0 4px', fontSize: '12px', color: '#2563eb', fontWeight: 500 }}>Name</label>
-              <input placeholder="Group Name" style={{ width: '100%', padding: '14px 16px', border: '1.5px solid #2563eb', borderRadius: '8px', fontSize: '15px', outline: 'none', fontFamily: 'inherit' }} />
+              <input
+                placeholder="Group Name"
+                value={groupName}
+                onChange={e => setGroupName(e.target.value)}
+                style={{ width: '100%', padding: '14px 16px', border: '1.5px solid #2563eb', borderRadius: '8px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
             </div>
 
             {/* Members Field */}
-            <div style={{ position: 'relative', marginBottom: '28px' }}>
+            <div style={{ position: 'relative', marginBottom: '8px' }}>
               <label style={{ position: 'absolute', top: '-9px', left: '12px', background: 'white', padding: '0 4px', fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Members</label>
-              <div style={{ padding: '12px 16px', border: '1.5px solid #d1d5db', borderRadius: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {['Chip', 'Chip'].map((name, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F4F6FB', borderRadius: '20px', padding: '4px 10px 4px 6px' }}>
-                    <img src={i === 0 ? coolSpirit : pinkPanda} alt={name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
-                    <span style={{ fontSize: '13px', color: '#374151' }}>{name}</span>
-                    <X size={12} color="#9ca3af" style={{ cursor: 'pointer' }} />
+              <div style={{ padding: '10px 12px', border: '1.5px solid #d1d5db', borderRadius: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap', minHeight: '52px' }}>
+                {selectedMembers.map(m => (
+                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F4F6FB', borderRadius: '20px', padding: '4px 10px 4px 6px' }}>
+                    <img src={m.avatar} alt={m.name} style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <span style={{ fontSize: '13px', color: '#374151' }}>{m.name}</span>
+                    <X size={12} color="#9ca3af" style={{ cursor: 'pointer' }} onClick={() => removeMember(m.id)} />
                   </div>
                 ))}
+                <input
+                  placeholder="Search contacts..."
+                  value={memberSearch}
+                  onChange={e => setMemberSearch(e.target.value)}
+                  style={{ border: 'none', outline: 'none', fontSize: '13px', background: 'transparent', minWidth: '120px', flex: 1 }}
+                />
               </div>
             </div>
 
-            <button style={{ width: '100%', padding: '14px', background: '#2563eb', border: 'none', borderRadius: '12px', color: 'white', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+            {/* Contact suggestions */}
+            {memberSearch && filteredContacts.length > 0 && (
+              <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', marginBottom: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                {filteredContacts.map((c, i) => (
+                  <div key={c.id} onClick={() => addMember(c)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', cursor: 'pointer', background: 'white', borderBottom: i < filteredContacts.length - 1 ? '1px solid #f3f4f6' : 'none' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'white'}
+                  >
+                    <img src={c.avatar} alt={c.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <span style={{ fontSize: '14px', color: '#111827' }}>{c.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* All contacts to add */}
+            {!memberSearch && (
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>Add members:</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {allContacts.filter(c => !selectedMembers.find(m => m.id === c.id)).map(c => (
+                    <div key={c.id} onClick={() => addMember(c)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F4F6FB', borderRadius: '20px', padding: '6px 12px 6px 6px', cursor: 'pointer', border: '1px solid #e5e7eb' }}>
+                      <img src={c.avatar} alt={c.name} style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <span style={{ fontSize: '13px', color: '#374151' }}>{c.name}</span>
+                      <Plus size={13} color="#2563eb" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Create Button */}
+            <button
+              onClick={handleCreate}
+              disabled={!groupName.trim()}
+              style={{
+                width: '100%', padding: '14px',
+                background: groupName.trim() ? '#2563eb' : '#93c5fd',
+                border: 'none', borderRadius: '12px',
+                color: 'white', fontSize: '15px', fontWeight: 600,
+                cursor: groupName.trim() ? 'pointer' : 'not-allowed',
+                transition: 'background 0.2s'
+              }}
+            >
               Create
             </button>
           </div>
