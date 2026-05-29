@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useTheme } from './context/ThemeContext'
 import Sidebar from './components/Sidebar'
 import ChatList from './components/ChatList'
 import EmptyState from './components/EmptyState'
@@ -11,8 +12,9 @@ import Archive from './components/Archive'
 import Settings from './components/Settings'
 
 function App() {
+  const theme = useTheme()
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', background: '#fff', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', width: '100vw', height: '100vh', background: theme.bg, overflow: 'hidden', transition: 'background 0.3s' }}>
       <Sidebar />
       <Routes>
         <Route path="/" element={<><ChatList /><EmptyState /></>} />

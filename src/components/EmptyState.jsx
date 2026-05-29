@@ -1,16 +1,26 @@
+import { useTheme } from '../context/ThemeContext'
 import chatIllustration from '../assets/chat-illustration.svg'
 
 const EmptyState = () => {
+  const theme = useTheme()
   return (
-    <div className="flex-1 min-w-0 h-screen bg-white flex flex-col items-center justify-center">
+    <div style={{
+      flex: 1, height: '100vh',
+      background: theme.bg,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      transition: 'background 0.3s'
+    }}>
       <img
         src={chatIllustration}
         alt="Select a conversation"
-        className="w-[260px] h-[260px] object-contain mb-8"
+        style={{ width: '260px', height: '260px', objectFit: 'contain', marginBottom: '32px' }}
       />
-      <p className="text-[15px] font-semibold text-gray-800">
+      <p style={{ fontSize: '15px', fontWeight: 600, color: theme.text }}>
         Select a conversation or start a{' '}
-        <button className="text-blue-600 hover:underline font-semibold">new one</button>
+        <button style={{ color: '#2563eb', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: '15px' }}>
+          new one
+        </button>
       </p>
     </div>
   )
