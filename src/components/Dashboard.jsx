@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { Search, Phone, Video, ChevronDown, Link, Smile, Send, Download, PhoneOff } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Search, Phone, Video, ChevronDown, Link, Smile, Send, Download, PhoneOff, ArrowLeft } from 'lucide-react'
 import ChatList from './ChatList'
 import { StarredPanel, MediaPanel, ContactPanel } from './RightPanel'
 import { useTheme } from '../context/ThemeContext'
+import { useIsMobile } from '../hooks/useWindowSize'
 import abstractImg from '../assets/abstract-img.jpg'
 import pinkPanda from '../assets/pink-panda.jpg'
 import dogHat from '../assets/dog-hat.jpg'
@@ -18,9 +19,7 @@ import horse from '../assets/horse.jpg'
 
 const chatData = {
   1: {
-    name: 'Pink Panda',
-    status: 'Online',
-    avatar: pinkPanda,
+    name: 'Pink Panda', status: 'Online', avatar: pinkPanda,
     messages: [
       { id: 1, text: 'Hi 👋, How are ya ?', time: '0:12', mine: false },
       { id: 2, divider: 'Today' },
@@ -34,61 +33,51 @@ const chatData = {
     ]
   },
   2: {
-    name: 'Dog Hat',
-    status: 'Online',
-    avatar: dogHat,
+    name: 'Dog Hat', status: 'Online', avatar: dogHat,
     messages: [
       { id: 1, text: 'Hey! Are you there?', time: '9:10', mine: false },
-      { id: 2, text: 'Yeah! What\'s up?', time: '9:12', mine: true },
+      { id: 2, text: "Yeah! What's up?", time: '9:12', mine: true },
       { id: 3, divider: 'Today' },
-      { id: 4, text: 'It\'s so quite outside 🤨', time: '9:36', mine: false },
+      { id: 4, text: "It's so quite outside 🤨", time: '9:36', mine: false },
       { id: 5, text: 'Yeah, very peaceful today!', time: '9:38', mine: true },
       { id: 6, text: 'I love it honestly 😌', time: '9:39', mine: true },
     ]
   },
   3: {
-    name: 'Cute Turtle',
-    status: 'Online',
-    avatar: cuteTurtle,
+    name: 'Cute Turtle', status: 'Online', avatar: cuteTurtle,
     messages: [
       { id: 1, text: 'Hey, can we talk later?', time: '8:00', mine: false },
       { id: 2, text: 'Sure! When?', time: '8:05', mine: true },
       { id: 3, divider: 'Today' },
       { id: 4, text: 'It was nice talking to you!', time: '9:30', mine: false },
       { id: 5, text: 'Same here 😊', time: '9:31', mine: true },
-      { id: 6, text: 'That\'s It. Goodbye!', time: '9:36', mine: false },
+      { id: 6, text: "That's It. Goodbye!", time: '9:36', mine: false },
       { id: 7, text: 'Take care! 👋', time: '9:37', mine: true },
     ]
   },
   4: {
-    name: 'Cool spirit',
-    status: 'Online',
-    avatar: coolSpirit,
+    name: 'Cool spirit', status: 'Online', avatar: coolSpirit,
     messages: [
       { id: 1, text: 'What are you up to?', time: '8:30', mine: true },
       { id: 2, divider: 'Today' },
       { id: 3, text: 'Look what I found', time: '9:36', mine: false },
       { id: 4, type: 'image', time: '9:36', mine: false },
-      { id: 5, text: 'Wow that\'s amazing! 😮', time: '9:38', mine: true },
-      { id: 6, text: 'Right?! Couldn\'t believe it!', time: '9:39', mine: false },
+      { id: 5, text: "Wow that's amazing! 😮", time: '9:38', mine: true },
+      { id: 6, text: "Right?! Couldn't believe it!", time: '9:39', mine: false },
     ]
   },
   5: {
-    name: 'strange cat',
-    status: 'Online',
-    avatar: strangeCat,
+    name: 'strange cat', status: 'Online', avatar: strangeCat,
     messages: [
       { id: 1, divider: 'Today' },
       { id: 2, text: 'Hi, sorry to bother you...', time: '9:36', mine: false },
-      { id: 3, text: 'No worries! What\'s going on?', time: '9:38', mine: true },
+      { id: 3, text: "No worries! What's going on?", time: '9:38', mine: true },
       { id: 4, text: 'I just wanted to ask something', time: '9:39', mine: false },
       { id: 5, text: 'Go ahead!', time: '9:40', mine: true },
     ]
   },
   6: {
-    name: 'Fire Fox',
-    status: 'Offline',
-    avatar: fireFox,
+    name: 'Fire Fox', status: 'Offline', avatar: fireFox,
     messages: [
       { id: 1, divider: 'Today' },
       { id: 2, text: 'What does the fox says?', time: '9:36', mine: false },
@@ -153,7 +142,9 @@ const Messages = ({ theme, messages }) => (
 
 const Dashboard = () => {
   const { id } = useParams()
+  const navigate = useNavigate()
   const theme = useTheme()
+  const isMobile = useIsMobile()
   const chat = chatData[parseInt(id)] || chatData[1]
   const [showVideo, setShowVideo] = useState(false)
   const [showAudio, setShowAudio] = useState(false)
@@ -187,14 +178,22 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', flex: 1, height: '100vh', overflow: 'hidden' }}>
-      <ChatList activeId={parseInt(id)} />
+
+      {/* Hide ChatList on mobile */}
+      {!isMobile && <ChatList activeId={parseInt(id)} />}
 
       {/* Chat Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', position: 'relative', overflow: 'hidden' }}>
 
         {/* Chat Header */}
-        <div style={{ background: theme.headerBg, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, zIndex: 10, transition: 'background 0.3s' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ background: theme.headerBg, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, zIndex: 10, transition: 'background 0.3s' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Back button on mobile */}
+            {isMobile && (
+              <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
+                <ArrowLeft size={22} color={theme.text} />
+              </button>
+            )}
             <div style={{ position: 'relative' }}>
               <img src={chat.avatar} alt={chat.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
               <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '11px', height: '11px', background: chat.status === 'Online' ? '#22c55e' : '#9ca3af', border: '2px solid white', borderRadius: '50%' }} />
@@ -204,12 +203,14 @@ const Dashboard = () => {
               <p style={{ fontSize: '12px', color: chat.status === 'Online' ? '#22c55e' : theme.textSecondary }}>{chat.status}</p>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <Video size={20} color={theme.textSecondary} style={{ cursor: 'pointer' }} onClick={() => { setShowVideo(true); setShowAudio(false) }} />
             <Phone size={20} color={theme.textSecondary} style={{ cursor: 'pointer' }} onClick={handleAudioCall} />
             <Search size={20} color={theme.textSecondary} style={{ cursor: 'pointer' }} />
-            <div style={{ width: '1px', height: '20px', background: theme.border }} />
-            <ChevronDown size={20} color={theme.textSecondary} style={{ cursor: 'pointer' }} onClick={() => setRightPanel(rightPanel ? null : 'contact')} />
+            {!isMobile && <div style={{ width: '1px', height: '20px', background: theme.border }} />}
+            {!isMobile && (
+              <ChevronDown size={20} color={theme.textSecondary} style={{ cursor: 'pointer' }} onClick={() => setRightPanel(rightPanel ? null : 'contact')} />
+            )}
           </div>
         </div>
 
@@ -217,7 +218,7 @@ const Dashboard = () => {
         <Messages theme={theme} messages={allMessages} />
 
         {/* Input */}
-        <div style={{ background: theme.headerBg, padding: '14px 20px', borderTop: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '12px', transition: 'background 0.3s' }}>
+        <div style={{ background: theme.headerBg, padding: '14px 16px', borderTop: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '12px', transition: 'background 0.3s' }}>
           <Link size={20} color={theme.textSecondary} style={{ cursor: 'pointer', flexShrink: 0 }} />
           <input
             type="text"
@@ -228,19 +229,19 @@ const Dashboard = () => {
             style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: theme.text, background: 'transparent' }}
           />
           <Smile size={20} color={theme.textSecondary} style={{ cursor: 'pointer', flexShrink: 0 }} />
-          <div onClick={sendMessage} style={{ width: '38px', height: '38px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <div onClick={sendMessage} style={{ width: '38px', height: '38px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
             <Send size={18} color="white" />
           </div>
         </div>
 
         {/* Video Call Overlay */}
         {showVideo && (
-          <div style={{ position: 'absolute', top: '19px', right: '19px', width: 'calc(100% - 40px)', maxWidth: '705px', height: '454px', borderRadius: '30px', overflow: 'hidden', zIndex: 20, boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
+          <div style={{ position: 'absolute', top: '19px', right: '19px', width: 'calc(100% - 40px)', maxWidth: '705px', height: isMobile ? '300px' : '454px', borderRadius: '30px', overflow: 'hidden', zIndex: 20, boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
             <img src={videoBg} alt="Video Call" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            <div style={{ position: 'absolute', top: '14px', right: '14px', width: '170px', height: '110px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+            <div style={{ position: 'absolute', top: '14px', right: '14px', width: isMobile ? '100px' : '170px', height: isMobile ? '70px' : '110px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
               <img src={videoThumb} alt="My video" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
-            <div style={{ position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)' }}>
+            <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)' }}>
               <button onClick={() => setShowVideo(false)} style={{ width: '68px', height: '44px', background: '#ef4444', border: 'none', borderRadius: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 16px rgba(239,68,68,0.6)' }}>
                 <PhoneOff size={20} color="white" />
               </button>
@@ -250,17 +251,17 @@ const Dashboard = () => {
 
         {/* Audio Call Overlay */}
         {showAudio && (
-          <div style={{ position: 'absolute', top: '19px', right: '19px', width: 'calc(100% - 40px)', maxWidth: '705px', height: '454px', background: theme.bgCard, zIndex: 20, borderRadius: '30px', boxShadow: '0 8px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', transition: 'background 0.3s' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+          <div style={{ position: 'absolute', top: '19px', right: isMobile ? '0' : '19px', left: isMobile ? '0' : 'auto', width: isMobile ? '100%' : 'calc(100% - 40px)', maxWidth: isMobile ? '100%' : '705px', height: isMobile ? '380px' : '454px', background: theme.bgCard, zIndex: 20, borderRadius: isMobile ? '0 0 30px 30px' : '30px', boxShadow: '0 8px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', transition: 'background 0.3s' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '20px' : '40px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                <img src={camel} alt="Camel" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${theme.border}` }} />
+                <img src={camel} alt="Camel" style={{ width: isMobile ? '70px' : '100px', height: isMobile ? '70px' : '100px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${theme.border}` }} />
                 <span style={{ fontSize: '14px', fontWeight: 500, color: theme.text }}>Camel</span>
               </div>
-              <svg width="80" height="30" viewBox="0 0 80 30">
+              <svg width="60" height="24" viewBox="0 0 80 30">
                 <path d="M0 15 Q10 5 20 15 Q30 25 40 15 Q50 5 60 15 Q70 25 80 15" stroke="#93c5fd" strokeWidth="2" fill="none" />
               </svg>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                <img src={horse} alt="Horse" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${theme.border}` }} />
+                <img src={horse} alt="Horse" style={{ width: isMobile ? '70px' : '100px', height: isMobile ? '70px' : '100px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${theme.border}` }} />
                 <span style={{ fontSize: '14px', fontWeight: 500, color: theme.text }}>Horse</span>
               </div>
             </div>
@@ -279,16 +280,16 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Right Panels */}
-      {rightPanel === 'contact' && (
+      {/* Right Panels - desktop only */}
+      {!isMobile && rightPanel === 'contact' && (
         <ContactPanel
           onClose={() => setRightPanel(null)}
           onMediaClick={() => setRightPanel('media')}
           onStarredClick={() => setRightPanel('starred')}
         />
       )}
-      {rightPanel === 'media' && <MediaPanel onClose={() => setRightPanel('contact')} />}
-      {rightPanel === 'starred' && <StarredPanel onClose={() => setRightPanel('contact')} />}
+      {!isMobile && rightPanel === 'media' && <MediaPanel onClose={() => setRightPanel('contact')} />}
+      {!isMobile && rightPanel === 'starred' && <StarredPanel onClose={() => setRightPanel('contact')} />}
     </div>
   )
 }

@@ -1,12 +1,16 @@
 import { MessageCircle, Users, Phone, Settings } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import { useIsMobile } from '../hooks/useWindowSize'
 import myAvatar from '../assets/my-avatar.jpg'
 
 const Sidebar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const theme = useTheme()
+  const isMobile = useIsMobile()
+
+  if (isMobile) return null
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/' || location.pathname.startsWith('/chat')

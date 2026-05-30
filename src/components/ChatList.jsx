@@ -2,6 +2,7 @@ import { Search, SlidersHorizontal, Archive, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext'
+import { useIsMobile } from '../hooks/useWindowSize'
 import pinkPanda from '../assets/pink-panda.jpg'
 import dogHat from '../assets/dog-hat.jpg'
 import cuteTurtle from '../assets/cute-turtle.jpg'
@@ -54,6 +55,7 @@ const ChatItem = ({ chat, active, onClick, theme }) => (
 const ChatList = ({ activeId }) => {
   const navigate = useNavigate()
   const theme = useTheme()
+  const isMobile = useIsMobile()
   const [filter, setFilter] = useState('all')
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef(null)
@@ -73,15 +75,25 @@ const ChatList = ({ activeId }) => {
   }
 
   return (
-    <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: theme.bgSecondary, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${theme.border}`, transition: 'all 0.3s' }}>
+    <div style={{
+      width: isMobile ? '100%' : '360px',
+      minWidth: isMobile ? 'unset' : '360px',
+      height: isMobile ? '100%' : '100vh',
+      background: theme.bgSecondary,
+      display: 'flex', flexDirection: 'column',
+      borderRight: isMobile ? 'none' : `1px solid ${theme.border}`,
+      transition: 'all 0.3s'
+    }}>
 
-      <div style={{ background: theme.headerBg, padding: '28px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.3s' }}>
+      {/* Header */}
+      <div style={{ background: theme.headerBg, padding: '20px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.3s' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 700, color: theme.text }}>Chats</h1>
         <svg onClick={() => navigate('/updates')} width="30" height="30" viewBox="0 0 30 30" fill="none" style={{ cursor: 'pointer' }}>
           <circle cx="15" cy="15" r="12" stroke={theme.textSecondary} strokeWidth="1.8" strokeDasharray="4.5 3" strokeLinecap="round"/>
         </svg>
       </div>
 
+      {/* Search */}
       <div style={{ background: theme.headerBg, padding: '0 16px 14px', transition: 'background 0.3s' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: theme.bgInput, borderRadius: '14px', padding: '11px 16px' }}>
           <Search size={16} color={theme.textSecondary} />
@@ -103,6 +115,7 @@ const ChatList = ({ activeId }) => {
         </div>
       </div>
 
+      {/* Archived */}
       {filter === 'all' && (
         <div style={{ background: theme.headerBg, padding: '0 20px 16px', borderBottom: `1px solid ${theme.borderLight}`, transition: 'background 0.3s' }}>
           <button onClick={() => navigate('/archive')} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -111,6 +124,7 @@ const ChatList = ({ activeId }) => {
         </div>
       )}
 
+      {/* Chat List */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', scrollbarWidth: 'none' }}>
         {filter === 'all' && (
           <>
