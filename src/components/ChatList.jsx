@@ -24,14 +24,7 @@ const allChatsFlat = [...pinnedChats, ...allChats]
 const unreadChats = allChatsFlat.filter(c => c.badge)
 
 const ChatItem = ({ chat, active, onClick, theme }) => (
-  <div onClick={onClick} style={{
-    display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px',
-    background: active ? '#2563eb' : theme.bgCard,
-    borderRadius: '16px', cursor: 'pointer', marginBottom: '6px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-    border: `1px solid ${theme.borderLight}`,
-    transition: 'all 0.15s'
-  }}>
+  <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: active ? '#2563eb' : theme.bgCard, borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: `1px solid ${theme.borderLight}`, transition: 'all 0.15s' }}>
     <div style={{ position: 'relative', flexShrink: 0 }}>
       <img src={chat.avatar} alt={chat.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
       {chat.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
@@ -61,9 +54,7 @@ const ChatList = ({ activeId }) => {
   const dropdownRef = useRef(null)
 
   useEffect(() => {
-    const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowDropdown(false)
-    }
+    const handleClick = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowDropdown(false) }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
@@ -75,17 +66,8 @@ const ChatList = ({ activeId }) => {
   }
 
   return (
-    <div style={{
-      width: isMobile ? '100%' : '360px',
-      minWidth: isMobile ? 'unset' : '360px',
-      height: isMobile ? '100%' : '100vh',
-      background: theme.bgSecondary,
-      display: 'flex', flexDirection: 'column',
-      borderRight: isMobile ? 'none' : `1px solid ${theme.border}`,
-      transition: 'all 0.3s'
-    }}>
+    <div style={{ width: isMobile ? '100%' : '360px', minWidth: isMobile ? 'unset' : '360px', height: '100%', background: theme.bgSecondary, display: 'flex', flexDirection: 'column', borderRight: isMobile ? 'none' : `1px solid ${theme.border}`, transition: 'all 0.3s' }}>
 
-      {/* Header */}
       <div style={{ background: theme.headerBg, padding: '20px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.3s' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 700, color: theme.text }}>Chats</h1>
         <svg onClick={() => navigate('/updates')} width="30" height="30" viewBox="0 0 30 30" fill="none" style={{ cursor: 'pointer' }}>
@@ -93,7 +75,6 @@ const ChatList = ({ activeId }) => {
         </svg>
       </div>
 
-      {/* Search */}
       <div style={{ background: theme.headerBg, padding: '0 16px 14px', transition: 'background 0.3s' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: theme.bgInput, borderRadius: '14px', padding: '11px 16px' }}>
           <Search size={16} color={theme.textSecondary} />
@@ -115,7 +96,6 @@ const ChatList = ({ activeId }) => {
         </div>
       </div>
 
-      {/* Archived */}
       {filter === 'all' && (
         <div style={{ background: theme.headerBg, padding: '0 20px 16px', borderBottom: `1px solid ${theme.borderLight}`, transition: 'background 0.3s' }}>
           <button onClick={() => navigate('/archive')} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -124,7 +104,6 @@ const ChatList = ({ activeId }) => {
         </div>
       )}
 
-      {/* Chat List */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px', scrollbarWidth: 'none' }}>
         {filter === 'all' && (
           <>

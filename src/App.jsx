@@ -13,30 +13,24 @@ import Updates from './components/Updates'
 import Archive from './components/Archive'
 import Settings from './components/Settings'
 
-const ChatHome = () => (
-  <div style={{ display: 'flex', flex: 1, height: '100vh', overflow: 'hidden' }}>
-    <ChatList />
-    <EmptyState />
-  </div>
-)
+const ChatHome = () => {
+  const theme = useTheme()
+  return (
+    <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+      <ChatList />
+      <EmptyState />
+    </div>
+  )
+}
 
 function App() {
   const theme = useTheme()
   const isMobile = useIsMobile()
 
   return (
-    <div style={{
-      display: 'flex',
-      width: '100vw',
-      height: '100vh',
-      background: theme.bg,
-      overflow: 'hidden',
-      flexDirection: 'row',
-      transition: 'background 0.3s'
-    }}>
+    <div style={{ display: 'flex', width: '100vw', height: '100vh', background: theme.bg, overflow: 'hidden', transition: 'background 0.3s' }}>
       {!isMobile && <Sidebar />}
-
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
           <Routes>
             <Route path="/" element={isMobile ? <ChatList /> : <ChatHome />} />

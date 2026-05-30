@@ -7,8 +7,7 @@ export const ThemeProvider = ({ children }) => {
   const toggleDark = () => setDarkMode(prev => !prev)
 
   const theme = {
-    darkMode,
-    toggleDark,
+    darkMode, toggleDark,
     bg: darkMode ? '#1e1e2e' : '#ffffff',
     bgSecondary: darkMode ? '#2a2a3e' : '#F4F6FB',
     bgCard: darkMode ? '#2a2a3e' : '#ffffff',
