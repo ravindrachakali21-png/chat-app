@@ -9,6 +9,54 @@ import cuteTurtle from '../assets/cute-turtle.jpg'
 import coolSpirit from '../assets/cool-spirit.jpg'
 import strangeCat from '../assets/strange-cat.jpg'
 
+/* ── Responsive styles ── */
+const responsiveStyles = `
+  .settings-layout { display: flex; flex: 1; height: 100vh; }
+  .settings-left {
+    width: 360px;
+    min-width: 360px;
+    height: 100vh;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e5e7eb;
+  }
+  .settings-right { display: flex; flex: 1; }
+  .subscreen-base {
+    width: 360px;
+    min-width: 360px;
+    height: 100vh;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e5e7eb;
+  }
+  .keyboard-modal-inner { width: 780px; }
+  .blocked-modal-inner { width: 420px; }
+
+  @media (max-width: 767px) {
+    .settings-left {
+      width: 100%;
+      min-width: unset;
+    }
+    .settings-right { display: none; }
+    .subscreen-base {
+      width: 100%;
+      min-width: unset;
+      border-right: none;
+    }
+    .keyboard-modal-inner {
+      width: calc(100vw - 32px);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .blocked-modal-inner {
+      width: calc(100vw - 32px);
+    }
+    .wallpaper-preview { display: none; }
+  }
+`
+
 const RadioOption = ({ label, checked, onClick }) => (
   <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
     <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: checked ? '6px solid #2563eb' : '2px solid #d1d5db', flexShrink: 0, transition: 'all 0.2s' }} />
@@ -29,7 +77,7 @@ const CheckOption = ({ label, desc, checked, onClick }) => (
 )
 
 const SubScreen = ({ title, subtitle, onBack, children }) => (
-  <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb' }}>
+  <div className="subscreen-base">
     <div style={{ padding: '28px 20px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: subtitle ? '8px' : '24px' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -177,7 +225,7 @@ const BlockedContacts = ({ onBack }) => {
 
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+          <div className="blocked-modal-inner" style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #f3f4f6' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Block New Contact</h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -224,7 +272,6 @@ const Security = ({ onBack }) => {
   ]
   return (
     <SubScreen title="Security" onBack={onBack}>
-      {/* Lock Icon */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
         <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -263,17 +310,14 @@ const ChatWallpaper = ({ onBack }) => {
   ]
 
   return (
-    <div style={{ display: 'flex', flex: 1, height: '100vh' }}>
+    <div className="settings-layout">
       <SubScreen title="Set Chat Wallpaper" onBack={onBack}>
-        {/* Enable Doodle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
           <span style={{ fontSize: '14px', color: '#374151' }}>Enable Talk Doodle</span>
           <div onClick={() => setEnableDoodle(!enableDoodle)} style={{ width: '20px', height: '20px', border: enableDoodle ? 'none' : '2px solid #d1d5db', borderRadius: '4px', background: enableDoodle ? '#2563eb' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             {enableDoodle && <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
           </div>
         </div>
-
-        {/* Color Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
           {colors.map((color, i) => (
             <div
@@ -294,8 +338,8 @@ const ChatWallpaper = ({ onBack }) => {
         </div>
       </SubScreen>
 
-      {/* Wallpaper Preview */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Wallpaper Preview — hidden on mobile */}
+      <div className="wallpaper-preview" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
           <p style={{ fontSize: '15px', fontWeight: 600, color: '#111827', textAlign: 'center' }}>Wallpaper Preview</p>
         </div>
@@ -361,7 +405,7 @@ const KeyboardModal = ({ onClose }) => {
   )
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-      <div style={{ background: 'white', borderRadius: '20px', padding: '32px', width: '780px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+      <div className="keyboard-modal-inner" style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', marginBottom: '24px' }}>Keyboard Shortcuts</h2>
         {shortcuts.map((row, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
@@ -388,7 +432,7 @@ const ThemeModal = ({ onClose }) => {
   const [selected, setSelected] = useState('Light')
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-      <div style={{ background: 'white', borderRadius: '20px', padding: '32px', width: '460px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+      <div style={{ background: 'white', borderRadius: '20px', padding: '32px', width: '460px', maxWidth: 'calc(100vw - 32px)', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#111827', marginBottom: '24px' }}>Choose Theme</h2>
         {['Light', 'Dark', 'System Default'].map(opt => (
           <RadioOption key={opt} label={opt} checked={selected === opt} onClick={() => setSelected(opt)} />
@@ -429,9 +473,10 @@ const Settings = () => {
   // Wallpaper has its own full layout
   if (screen === 'wallpaper') {
     return (
-      <div style={{ display: 'flex', flex: 1, height: '100vh' }}>
+      <>
+        <style>{responsiveStyles}</style>
         <ChatWallpaper onBack={() => setScreen('main')} />
-      </div>
+      </>
     )
   }
 
@@ -448,7 +493,7 @@ const Settings = () => {
     if (screen === 'help') return <Help onBack={() => setScreen('main')} />
 
     return (
-      <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: '#fff', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb' }}>
+      <div className="settings-left">
         <div style={{ padding: '28px 20px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -480,12 +525,17 @@ const Settings = () => {
   }
 
   return (
-    <div style={{ display: 'flex', flex: 1, height: '100vh' }}>
-      {renderLeft()}
-      <EmptyState />
-      {showKeyboard && <KeyboardModal onClose={() => setShowKeyboard(false)} />}
-      {showTheme && <ThemeModal onClose={() => setShowTheme(false)} />}
-    </div>
+    <>
+      <style>{responsiveStyles}</style>
+      <div className="settings-layout">
+        {renderLeft()}
+        <div className="settings-right">
+          <EmptyState />
+        </div>
+        {showKeyboard && <KeyboardModal onClose={() => setShowKeyboard(false)} />}
+        {showTheme && <ThemeModal onClose={() => setShowTheme(false)} />}
+      </div>
+    </>
   )
 }
 

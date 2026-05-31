@@ -26,8 +26,8 @@ const chatData = {
   6: { name: 'Fire Fox', status: 'Offline', avatar: fireFox, messages: [{ id: 1, divider: 'Today' }, { id: 2, text: 'What does the fox says?', time: '9:36', mine: false }, { id: 3, text: 'Hahaha 😂 Ring-ding-ding!', time: '9:40', mine: true }] },
 }
 
-const MessageList = ({ theme, messages }) => (
-  <div style={{ flex: 1, overflowY: 'auto', padding: '20px', scrollbarWidth: 'none', background: theme.chatBg, transition: 'background 0.3s' }}>
+const MessageList = ({ theme, messages, isMobile }) => (
+  <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px', scrollbarWidth: 'none', background: theme.chatBg, transition: 'background 0.3s' }}>
     {messages.map(msg => {
       if (msg.divider) return (
         <div key={msg.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
@@ -39,7 +39,7 @@ const MessageList = ({ theme, messages }) => (
       if (msg.type === 'image') return (
         <div key={msg.id} style={{ display: 'flex', justifyContent: msg.mine ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
           <div style={{ background: theme.msgBg, borderRadius: '18px', padding: '8px', display: 'inline-block', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-            <img src={abstractImg} alt="img" style={{ width: '180px', height: '150px', borderRadius: '12px', objectFit: 'cover', display: 'block' }} />
+            <img src={abstractImg} alt="img" style={{ width: isMobile ? '150px' : '180px', height: isMobile ? '120px' : '150px', borderRadius: '12px', objectFit: 'cover', display: 'block' }} />
             <p style={{ fontSize: '11px', color: theme.textSecondary, marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
           </div>
         </div>
@@ -80,7 +80,12 @@ const Dashboard = () => {
   const [inputMsg, setInputMsg] = useState('')
   const [extraMessages, setExtraMessages] = useState({})
 
-  const handleAudioCall = () => { setShowAudio(true); setAudioConnected(false); setTimeout(() => setAudioConnected(true), 2000) }
+  const handleAudioCall = () => {
+    setShowAudio(true)
+    setShowVideo(false)
+    setAudioConnected(false)
+    setTimeout(() => setAudioConnected(true), 2000)
+  }
 
   const sendMessage = () => {
     if (!inputMsg.trim()) return
@@ -93,8 +98,11 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+
+      {/* Hide ChatList on mobile */}
       {!isMobile && <ChatList activeId={parseInt(id)} />}
 
+      {/* Chat Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', overflow: 'hidden' }}>
 
         {/* Header */}
@@ -125,7 +133,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <MessageList theme={theme} messages={allMessages} />
+        {/* Messages */}
+        <MessageList theme={theme} messages={allMessages} isMobile={isMobile} />
 
         {/* Input */}
         <div style={{ background: theme.headerBg, padding: '12px 16px', borderTop: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, transition: 'background 0.3s' }}>
@@ -137,24 +146,24 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Video Call */}
+        {/* Video Call Overlay */}
         {showVideo && (
-          <div style={{ position: 'absolute', top: '19px', right: '19px', width: 'calc(100% - 40px)', maxWidth: '705px', height: isMobile ? '280px' : '454px', borderRadius: '24px', overflow: 'hidden', zIndex: 20, boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
+          <div style={{ position: 'absolute', top: isMobile ? '0' : '19px', right: isMobile ? '0' : '19px', left: isMobile ? '0' : 'auto', bottom: isMobile ? '0' : 'auto', width: isMobile ? '100%' : 'calc(100% - 40px)', maxWidth: isMobile ? '100%' : '705px', height: isMobile ? '100%' : '454px', borderRadius: isMobile ? '0' : '24px', overflow: 'hidden', zIndex: 20, boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
             <img src={videoBg} alt="Video" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            <div style={{ position: 'absolute', top: '12px', right: '12px', width: isMobile ? '90px' : '160px', height: isMobile ? '60px' : '100px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+            <div style={{ position: 'absolute', top: '14px', right: '14px', width: isMobile ? '90px' : '160px', height: isMobile ? '60px' : '100px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
               <img src={videoThumb} alt="thumb" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
-            <div style={{ position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)' }}>
-              <button onClick={() => setShowVideo(false)} style={{ width: '60px', height: '42px', background: '#ef4444', border: 'none', borderRadius: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <div style={{ position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)' }}>
+              <button onClick={() => setShowVideo(false)} style={{ width: '64px', height: '42px', background: '#ef4444', border: 'none', borderRadius: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <PhoneOff size={20} color="white" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Audio Call */}
+        {/* Audio Call Overlay */}
         {showAudio && (
-          <div style={{ position: 'absolute', top: '19px', right: isMobile ? '0' : '19px', left: isMobile ? '0' : 'auto', width: isMobile ? '100%' : 'calc(100% - 40px)', maxWidth: isMobile ? '100%' : '705px', height: isMobile ? '360px' : '454px', background: theme.bgCard, zIndex: 20, borderRadius: isMobile ? '0 0 24px 24px' : '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', transition: 'background 0.3s' }}>
+          <div style={{ position: 'absolute', top: isMobile ? '0' : '19px', right: isMobile ? '0' : '19px', left: isMobile ? '0' : 'auto', bottom: isMobile ? '0' : 'auto', width: isMobile ? '100%' : 'calc(100% - 40px)', maxWidth: isMobile ? '100%' : '705px', height: isMobile ? '100%' : '454px', background: theme.bgCard, zIndex: 20, borderRadius: isMobile ? '0' : '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px', transition: 'background 0.3s' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '24px' : '40px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                 <img src={camel} alt="Camel" style={{ width: isMobile ? '72px' : '100px', height: isMobile ? '72px' : '100px', borderRadius: '50%', objectFit: 'cover', border: `3px solid ${theme.border}` }} />
@@ -171,14 +180,17 @@ const Dashboard = () => {
             {audioConnected ? (
               <>
                 <p style={{ fontSize: '16px', fontWeight: 600, color: '#22c55e' }}>Connected</p>
-                <p style={{ fontSize: '28px', fontWeight: 700, color: theme.text }}>12 : 32</p>
+                <p style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 700, color: theme.text }}>12 : 32</p>
               </>
             ) : <p style={{ fontSize: '20px', fontWeight: 700, color: theme.text }}>Connecting...</p>}
-            <button onClick={() => { setShowAudio(false); setAudioConnected(false) }} style={{ background: theme.bgCard, border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: '10px', padding: '10px 32px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>Hang Up</button>
+            <button onClick={() => { setShowAudio(false); setAudioConnected(false) }} style={{ background: theme.bgCard, border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: '10px', padding: '10px 32px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+              Hang Up
+            </button>
           </div>
         )}
       </div>
 
+      {/* Right Panels - desktop only */}
       {!isMobile && rightPanel === 'contact' && <ContactPanel onClose={() => setRightPanel(null)} onMediaClick={() => setRightPanel('media')} onStarredClick={() => setRightPanel('starred')} />}
       {!isMobile && rightPanel === 'media' && <MediaPanel onClose={() => setRightPanel('contact')} />}
       {!isMobile && rightPanel === 'starred' && <StarredPanel onClose={() => setRightPanel('contact')} />}

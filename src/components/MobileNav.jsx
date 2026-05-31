@@ -20,14 +20,58 @@ const MobileNav = () => {
   ]
 
   return (
-    <div style={{ width: '100%', height: '64px', background: theme.headerBg, borderTop: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexShrink: 0, transition: 'background 0.3s' }}>
-      {tabs.map(({ path, icon: Icon, label }) => (
-        <button key={path} onClick={() => navigate(path)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', padding: '8px 20px', color: isActive(path) ? '#2563eb' : theme.textSecondary }}>
-          <Icon size={22} color={isActive(path) ? '#2563eb' : theme.textSecondary} />
-          <span style={{ fontSize: '11px', fontWeight: isActive(path) ? 600 : 400, color: isActive(path) ? '#2563eb' : theme.textSecondary }}>{label}</span>
-        </button>
-      ))}
-    </div>
+    <>
+      {/* ── Mobile-only bottom nav (hidden on desktop) ── */}
+      <style>{`
+        .mobile-nav-bar { display: flex; }
+        @media (min-width: 768px) {
+          .mobile-nav-bar { display: none !important; }
+        }
+      `}</style>
+
+      <div
+        className="mobile-nav-bar"
+        style={{
+          width: '100%',
+          height: '64px',
+          background: theme.headerBg,
+          borderTop: `1px solid ${theme.border}`,
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          flexShrink: 0,
+          transition: 'background 0.3s',
+        }}
+      >
+        {tabs.map(({ path, icon: Icon, label }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '3px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px 20px',
+              color: isActive(path) ? '#2563eb' : theme.textSecondary,
+            }}
+          >
+            <Icon size={22} color={isActive(path) ? '#2563eb' : theme.textSecondary} />
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: isActive(path) ? 600 : 400,
+                color: isActive(path) ? '#2563eb' : theme.textSecondary,
+              }}
+            >
+              {label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </>
   )
 }
 

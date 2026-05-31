@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Search, Plus, X, Download, Smile, Send, Link, ChevronDown } from 'lucide-react'
+import { Search, Plus, X, Download, Smile, Send, Link, ChevronDown, ArrowLeft } from 'lucide-react'
+import { useIsMobile } from '../hooks/useWindowSize'
 import pinkPanda from '../assets/pink-panda.jpg'
 import dogHat from '../assets/dog-hat.jpg'
 import cuteTurtle from '../assets/cute-turtle.jpg'
@@ -25,6 +26,7 @@ const allContacts = [
 ]
 
 const Groups = () => {
+  const isMobile = useIsMobile()
   const [groups, setGroups] = useState(initialGroups)
   const [showModal, setShowModal] = useState(false)
   const [groupName, setGroupName] = useState('')
@@ -32,6 +34,7 @@ const Groups = () => {
   const [memberSearch, setMemberSearch] = useState('')
   const [activeGroup, setActiveGroup] = useState(initialGroups[0])
   const [message, setMessage] = useState('')
+  const [mobileView, setMobileView] = useState('list')
   const [chatMessages, setChatMessages] = useState({
     1: [
       { id: 1, text: 'Hi 👋, How are ya ?', time: '0:12', mine: false },
@@ -50,223 +53,194 @@ const Groups = () => {
     !selectedMembers.find(m => m.id === c.id)
   )
 
-  const addMember = (contact) => {
-    setSelectedMembers(prev => [...prev, contact])
-    setMemberSearch('')
-  }
-
-  const removeMember = (id) => {
-    setSelectedMembers(prev => prev.filter(m => m.id !== id))
-  }
+  const addMember = (contact) => { setSelectedMembers(prev => [...prev, contact]); setMemberSearch('') }
+  const removeMember = (id) => setSelectedMembers(prev => prev.filter(m => m.id !== id))
 
   const handleCreate = () => {
     if (!groupName.trim()) return
     const newGroup = {
-      id: Date.now(),
-      name: groupName.trim(),
-      message: 'Group created',
+      id: Date.now(), name: groupName.trim(), message: 'Group created',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      avatar: selectedMembers[0]?.avatar || pinkPanda,
-      online: true,
-      pinned: false,
+      avatar: selectedMembers[0]?.avatar || pinkPanda, online: true, pinned: false,
     }
     setGroups(prev => [...prev, newGroup])
-    setChatMessages(prev => ({
-      ...prev,
-      [newGroup.id]: [{ id: 1, text: `Group "${newGroup.name}" created! 🎉`, time: newGroup.time, mine: false }]
-    }))
+    setChatMessages(prev => ({ ...prev, [newGroup.id]: [{ id: 1, text: `Group "${newGroup.name}" created! 🎉`, time: newGroup.time, mine: false }] }))
     setActiveGroup(newGroup)
-    setGroupName('')
-    setSelectedMembers([])
-    setMemberSearch('')
-    setShowModal(false)
+    setGroupName(''); setSelectedMembers([]); setMemberSearch(''); setShowModal(false)
+    if (isMobile) setMobileView('chat')
   }
 
   const sendMessage = () => {
     if (!message.trim() || !activeGroup) return
-    const newMsg = {
-      id: Date.now(),
-      text: message.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      mine: true
-    }
-    setChatMessages(prev => ({
-      ...prev,
-      [activeGroup.id]: [...(prev[activeGroup.id] || []), newMsg]
-    }))
+    const newMsg = { id: Date.now(), text: message.trim(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), mine: true }
+    setChatMessages(prev => ({ ...prev, [activeGroup.id]: [...(prev[activeGroup.id] || []), newMsg] }))
     setMessage('')
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') sendMessage()
+  const handleGroupSelect = (g) => {
+    setActiveGroup(g)
+    if (isMobile) setMobileView('chat')
   }
 
   const currentMessages = chatMessages[activeGroup?.id] || []
 
+  const GroupListPanel = () => (
+    <div style={{ width: isMobile ? '100%' : '360px', minWidth: isMobile ? 'unset' : '360px', height: '100%', background: '#F4F6FB', display: 'flex', flexDirection: 'column', borderRight: isMobile ? 'none' : '1px solid #e5e7eb' }}>
+
+      <div style={{ background: '#fff', padding: '20px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#111827' }}>Groups</h1>
+      </div>
+
+      <div style={{ background: '#fff', padding: '0 16px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F4F6FB', borderRadius: '14px', padding: '11px 16px' }}>
+          <Search size={16} color="#9ca3af" />
+          <input type="text" placeholder="Search" style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px' }} />
+        </div>
+      </div>
+
+      <div style={{ background: '#fff', padding: '0 20px 16px', borderBottom: '1px solid #f3f4f6' }}>
+        <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '14px', fontWeight: 600 }}>
+          Create New Group <Plus size={18} color="#2563eb" />
+        </button>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px', scrollbarWidth: 'none' }}>
+        {groups.filter(g => g.pinned).length > 0 && (
+          <>
+            <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '4px 6px 10px' }}>Pinned</p>
+            {groups.filter(g => g.pinned).map(g => (
+              <div key={g.id} onClick={() => handleGroupSelect(g)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: activeGroup?.id === g.id && !isMobile ? '#2563eb' : '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                  {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '14.5px', color: activeGroup?.id === g.id && !isMobile ? 'white' : '#111827' }}>{g.name}</span>
+                    <span style={{ fontSize: '12px', color: activeGroup?.id === g.id && !isMobile ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>{g.time}</span>
+                  </div>
+                  <span style={{ fontSize: '13px', color: activeGroup?.id === g.id && !isMobile ? 'rgba(255,255,255,0.75)' : '#9ca3af' }}>{g.message}</span>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '14px 6px 10px' }}>All Chats</p>
+        {groups.filter(g => !g.pinned).map(g => (
+          <div key={g.id} onClick={() => handleGroupSelect(g)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: activeGroup?.id === g.id && !isMobile ? '#2563eb' : '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+              {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                <span style={{ fontWeight: 600, fontSize: '14.5px', color: activeGroup?.id === g.id && !isMobile ? 'white' : '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
+                <span style={{ fontSize: '12px', color: activeGroup?.id === g.id && !isMobile ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>{g.time}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: activeGroup?.id === g.id && !isMobile ? 'rgba(255,255,255,0.75)' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.message}</span>
+                {g.badge && <span style={{ width: '20px', height: '20px', background: activeGroup?.id === g.id && !isMobile ? 'white' : '#2563eb', color: activeGroup?.id === g.id && !isMobile ? '#2563eb' : 'white', fontSize: '11px', fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{g.badge}</span>}
+                {g.chevron && <ChevronDown size={14} color="#9ca3af" />}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const ChatWindowPanel = () => (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', background: '#F8F9FE' }}>
+      <div style={{ background: '#fff', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {isMobile && (
+            <button onClick={() => setMobileView('list')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <ArrowLeft size={22} color="#111827" />
+            </button>
+          )}
+          <div style={{ position: 'relative' }}>
+            <img src={activeGroup?.avatar} alt={activeGroup?.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
+            <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '11px', height: '11px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: '15px', color: '#111827' }}>{activeGroup?.name}</p>
+            <p style={{ fontSize: '12px', color: '#9ca3af' }}>Pink Panda, Turtle, 212 others</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <Search size={20} color="#9ca3af" style={{ cursor: 'pointer' }} />
+          {!isMobile && <ChevronDown size={20} color="#9ca3af" style={{ cursor: 'pointer' }} />}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '20px', scrollbarWidth: 'none' }}>
+        {currentMessages.map((msg) => (
+          <div key={msg.id}>
+            {msg.type === 'image' ? (
+              <div style={{ marginBottom: '8px' }}>
+                <div style={{ background: '#fff', borderRadius: '18px', padding: '8px', display: 'inline-block', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                  <img src={abstractImg} alt="Abstract" style={{ width: isMobile ? '150px' : '180px', height: isMobile ? '120px' : '150px', borderRadius: '12px', objectFit: 'cover', display: 'block' }} />
+                  <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
+                </div>
+              </div>
+            ) : msg.type === 'reaction' ? (
+              <div style={{ marginBottom: '8px' }}><span style={{ fontSize: '13px' }}>{msg.text}</span></div>
+            ) : msg.type === 'file' ? (
+              <div style={{ marginBottom: '8px' }}>
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '12px 16px', display: 'inline-flex', alignItems: 'center', gap: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <span style={{ fontSize: '18px' }}>🖼️</span>
+                  <span style={{ fontSize: '14px', color: '#111827', fontWeight: 500 }}>{msg.name}</span>
+                  <Download size={18} color="#9ca3af" style={{ cursor: 'pointer' }} />
+                </div>
+                <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>{msg.time}</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: msg.mine ? 'flex-end' : 'flex-start', marginBottom: '6px' }}>
+                <div style={{ background: msg.mine ? '#2563eb' : '#fff', borderRadius: msg.mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px', padding: '12px 16px', maxWidth: '70%', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  <p style={{ fontSize: '14px', color: msg.mine ? 'white' : '#111827' }}>{msg.text}</p>
+                  <p style={{ fontSize: '11px', color: msg.mine ? 'rgba(255,255,255,0.65)' : '#9ca3af', marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+        {activeGroup?.id === 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 16px' }}>
+            <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+            <span style={{ fontSize: '12px', color: '#9ca3af' }}>Today</span>
+            <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+          </div>
+        )}
+      </div>
+
+      <div style={{ background: '#fff', padding: '12px 16px', borderTop: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+        <Link size={20} color="#9ca3af" style={{ cursor: 'pointer', flexShrink: 0 }} />
+        <input type="text" placeholder="Write a message ..." value={message} onChange={e => setMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }} />
+        <Smile size={20} color="#9ca3af" style={{ cursor: 'pointer', flexShrink: 0 }} />
+        <div onClick={sendMessage} style={{ width: '38px', height: '38px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <Send size={18} color="white" />
+        </div>
+      </div>
+    </div>
+  )
+
   return (
-    <div style={{ display: 'flex', flex: 1, height: '100vh', position: 'relative' }}>
+    <div style={{ display: 'flex', flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Left Panel */}
-      <div style={{ width: '360px', minWidth: '360px', height: '100vh', background: '#F4F6FB', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e5e7eb' }}>
-
-        {/* Header */}
-        <div style={{ background: '#fff', padding: '28px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#111827' }}>Groups</h1>
-        </div>
-
-        {/* Search */}
-        <div style={{ background: '#fff', padding: '0 16px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F4F6FB', borderRadius: '14px', padding: '11px 16px' }}>
-            <Search size={16} color="#9ca3af" />
-            <input type="text" placeholder="Search" style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: '14px' }} />
-          </div>
-        </div>
-
-        {/* Create New Group */}
-        <div style={{ background: '#fff', padding: '0 20px 16px', borderBottom: '1px solid #f3f4f6' }}>
-          <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '14px', fontWeight: 600 }}>
-            Create New Group
-            <Plus size={18} color="#2563eb" />
-          </button>
-        </div>
-
-        {/* Groups List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px', scrollbarWidth: 'none' }}>
-
-          {/* Pinned */}
-          {groups.filter(g => g.pinned).length > 0 && (
-            <>
-              <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '4px 6px 10px' }}>Pinned</p>
-              {groups.filter(g => g.pinned).map(g => (
-                <div key={g.id} onClick={() => setActiveGroup(g)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: activeGroup?.id === g.id ? '#2563eb' : '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                  <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
-                    {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '14.5px', color: activeGroup?.id === g.id ? 'white' : '#111827' }}>{g.name}</span>
-                      <span style={{ fontSize: '12px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>{g.time}</span>
-                    </div>
-                    <span style={{ fontSize: '13px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.75)' : '#9ca3af' }}>{g.message}</span>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-
-          {/* All Chats */}
-          <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#6b7280', padding: '14px 6px 10px' }}>All Chats</p>
-          {groups.filter(g => !g.pinned).map(g => (
-            <div key={g.id} onClick={() => setActiveGroup(g)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', background: activeGroup?.id === g.id ? '#2563eb' : '#fff', borderRadius: '16px', cursor: 'pointer', marginBottom: '6px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <img src={g.avatar} alt={g.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
-                {g.online && <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '12px', height: '12px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '14.5px', color: activeGroup?.id === g.id ? 'white' : '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
-                  <span style={{ fontSize: '12px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>{g.time}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '13px', color: activeGroup?.id === g.id ? 'rgba(255,255,255,0.75)' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.message}</span>
-                  {g.badge && <span style={{ width: '20px', height: '20px', background: activeGroup?.id === g.id ? 'white' : '#2563eb', color: activeGroup?.id === g.id ? '#2563eb' : 'white', fontSize: '11px', fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{g.badge}</span>}
-                  {g.chevron && <ChevronDown size={14} color={activeGroup?.id === g.id ? 'rgba(255,255,255,0.7)' : '#9ca3af'} />}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Chat Window */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', background: '#F8F9FE' }}>
-
-        {/* Chat Header */}
-        <div style={{ background: '#fff', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ position: 'relative' }}>
-              <img src={activeGroup?.avatar} alt={activeGroup?.name} style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
-              <span style={{ position: 'absolute', bottom: '1px', right: '1px', width: '11px', height: '11px', background: '#22c55e', border: '2px solid white', borderRadius: '50%' }} />
-            </div>
-            <div>
-              <p style={{ fontWeight: 700, fontSize: '15px', color: '#111827' }}>{activeGroup?.name}</p>
-              <p style={{ fontSize: '12px', color: '#9ca3af' }}>Pink Panda, Turtle, 212 others</p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Search size={20} color="#9ca3af" style={{ cursor: 'pointer' }} />
-            <ChevronDown size={20} color="#9ca3af" style={{ cursor: 'pointer' }} />
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px', scrollbarWidth: 'none' }}>
-          {currentMessages.map((msg) => (
-            <div key={msg.id}>
-              {msg.type === 'image' ? (
-                <div style={{ marginBottom: '8px' }}>
-                  <div style={{ background: '#fff', borderRadius: '18px', padding: '8px', display: 'inline-block', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-                    <img src={abstractImg} alt="Abstract" style={{ width: '180px', height: '150px', borderRadius: '12px', objectFit: 'cover', display: 'block' }} />
-                    <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
-                  </div>
-                </div>
-              ) : msg.type === 'reaction' ? (
-                <div style={{ marginBottom: '8px' }}><span style={{ fontSize: '13px' }}>{msg.text}</span></div>
-              ) : msg.type === 'file' ? (
-                <div style={{ marginBottom: '8px' }}>
-                  <div style={{ background: '#fff', borderRadius: '16px', padding: '12px 16px', display: 'inline-flex', alignItems: 'center', gap: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                    <span style={{ fontSize: '18px' }}>🖼️</span>
-                    <span style={{ fontSize: '14px', color: '#111827', fontWeight: 500 }}>{msg.name}</span>
-                    <Download size={18} color="#9ca3af" style={{ cursor: 'pointer' }} />
-                  </div>
-                  <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>{msg.time}</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: msg.mine ? 'flex-end' : 'flex-start', marginBottom: '6px' }}>
-                  <div style={{ background: msg.mine ? '#2563eb' : '#fff', borderRadius: msg.mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px', padding: '12px 16px', maxWidth: '320px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                    <p style={{ fontSize: '14px', color: msg.mine ? 'white' : '#111827' }}>{msg.text}</p>
-                    <p style={{ fontSize: '11px', color: msg.mine ? 'rgba(255,255,255,0.65)' : '#9ca3af', marginTop: '4px', textAlign: 'right' }}>{msg.time}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Date divider only for group 1 */}
-          {activeGroup?.id === 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 16px' }}>
-              <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
-              <span style={{ fontSize: '12px', color: '#9ca3af' }}>Today</span>
-              <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
-            </div>
-          )}
-        </div>
-
-        {/* Message Input */}
-        <div style={{ background: '#fff', padding: '14px 20px', borderTop: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link size={20} color="#9ca3af" style={{ cursor: 'pointer', flexShrink: 0 }} />
-          <input
-            type="text"
-            placeholder="Write a message ..."
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }}
-          />
-          <Smile size={20} color="#9ca3af" style={{ cursor: 'pointer', flexShrink: 0 }} />
-          <div onClick={sendMessage} style={{ width: '38px', height: '38px', background: '#2563eb', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Send size={18} color="white" />
-          </div>
-        </div>
-      </div>
+      {isMobile ? (
+        mobileView === 'list' ? <GroupListPanel /> : <ChatWindowPanel />
+      ) : (
+        <>
+          <GroupListPanel />
+          <ChatWindowPanel />
+        </>
+      )}
 
       {/* Create Group Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', width: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
-
-            {/* Modal Header */}
+          <div style={{ background: 'white', borderRadius: '20px', padding: '24px', width: isMobile ? '92%' : '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#111827' }}>Create New Group</h2>
               <button onClick={() => { setShowModal(false); setGroupName(''); setSelectedMembers([]); setMemberSearch('') }} style={{ background: '#6b7280', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -274,18 +248,11 @@ const Groups = () => {
               </button>
             </div>
 
-            {/* Group Name */}
             <div style={{ position: 'relative', marginBottom: '20px' }}>
               <label style={{ position: 'absolute', top: '-9px', left: '12px', background: 'white', padding: '0 4px', fontSize: '12px', color: '#2563eb', fontWeight: 500 }}>Name</label>
-              <input
-                placeholder="Group Name"
-                value={groupName}
-                onChange={e => setGroupName(e.target.value)}
-                style={{ width: '100%', padding: '14px 16px', border: '1.5px solid #2563eb', borderRadius: '8px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
-              />
+              <input placeholder="Group Name" value={groupName} onChange={e => setGroupName(e.target.value)} style={{ width: '100%', padding: '14px 16px', border: '1.5px solid #2563eb', borderRadius: '8px', fontSize: '15px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
             </div>
 
-            {/* Members Field */}
             <div style={{ position: 'relative', marginBottom: '8px' }}>
               <label style={{ position: 'absolute', top: '-9px', left: '12px', background: 'white', padding: '0 4px', fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>Members</label>
               <div style={{ padding: '10px 12px', border: '1.5px solid #d1d5db', borderRadius: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap', minHeight: '52px' }}>
@@ -296,23 +263,14 @@ const Groups = () => {
                     <X size={12} color="#9ca3af" style={{ cursor: 'pointer' }} onClick={() => removeMember(m.id)} />
                   </div>
                 ))}
-                <input
-                  placeholder="Search contacts..."
-                  value={memberSearch}
-                  onChange={e => setMemberSearch(e.target.value)}
-                  style={{ border: 'none', outline: 'none', fontSize: '13px', background: 'transparent', minWidth: '120px', flex: 1 }}
-                />
+                <input placeholder="Search contacts..." value={memberSearch} onChange={e => setMemberSearch(e.target.value)} style={{ border: 'none', outline: 'none', fontSize: '13px', background: 'transparent', minWidth: '120px', flex: 1 }} />
               </div>
             </div>
 
-            {/* Contact suggestions */}
             {memberSearch && filteredContacts.length > 0 && (
               <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', marginBottom: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                 {filteredContacts.map((c, i) => (
-                  <div key={c.id} onClick={() => addMember(c)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', cursor: 'pointer', background: 'white', borderBottom: i < filteredContacts.length - 1 ? '1px solid #f3f4f6' : 'none' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'white'}
-                  >
+                  <div key={c.id} onClick={() => addMember(c)} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', cursor: 'pointer', borderBottom: i < filteredContacts.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
                     <img src={c.avatar} alt={c.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
                     <span style={{ fontSize: '14px', color: '#111827' }}>{c.name}</span>
                   </div>
@@ -320,7 +278,6 @@ const Groups = () => {
               </div>
             )}
 
-            {/* All contacts to add */}
             {!memberSearch && (
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>Add members:</p>
@@ -336,19 +293,7 @@ const Groups = () => {
               </div>
             )}
 
-            {/* Create Button */}
-            <button
-              onClick={handleCreate}
-              disabled={!groupName.trim()}
-              style={{
-                width: '100%', padding: '14px',
-                background: groupName.trim() ? '#2563eb' : '#93c5fd',
-                border: 'none', borderRadius: '12px',
-                color: 'white', fontSize: '15px', fontWeight: 600,
-                cursor: groupName.trim() ? 'pointer' : 'not-allowed',
-                transition: 'background 0.2s'
-              }}
-            >
+            <button onClick={handleCreate} disabled={!groupName.trim()} style={{ width: '100%', padding: '14px', background: groupName.trim() ? '#2563eb' : '#93c5fd', border: 'none', borderRadius: '12px', color: 'white', fontSize: '15px', fontWeight: 600, cursor: groupName.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}>
               Create
             </button>
           </div>
