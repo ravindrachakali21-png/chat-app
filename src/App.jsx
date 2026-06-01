@@ -13,15 +13,12 @@ import Updates from './components/Updates'
 import Archive from './components/Archive'
 import Settings from './components/Settings'
 
-const ChatHome = () => {
-  const theme = useTheme()
-  return (
-    <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
-      <ChatList />
-      <EmptyState />
-    </div>
-  )
-}
+const ChatHome = () => (
+  <div style={{ display: 'flex', flex: 1, height: '100%', overflow: 'hidden' }}>
+    <ChatList />
+    <EmptyState />
+  </div>
+)
 
 function App() {
   const theme = useTheme()
